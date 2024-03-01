@@ -11,7 +11,7 @@ import torch
 
 
 class Augmentation():
-    def __init__(self, img_size=640, augment=False):
+    def __init__(self, img_size=640, augment=True):
         # self.path = path
         self.image_size = img_size
         self.augment = augment
