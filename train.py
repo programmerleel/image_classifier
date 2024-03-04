@@ -17,12 +17,14 @@ import sys
 import timm.scheduler
 from utils.loss import *
 from tqdm import tqdm
+from utils.util import EarlyStop
 
-def run(args,rank):
+def run(rank,args):
     train_dataset = ImageClassifierDataset(args.train_data_root,args.img_size,args.augment)
     train_dataloader = create_dataloader(train_dataset,args.train_batch_size)
     val_dataset = ImageClassifierDataset(args.val_data_root, args.img_size, False)
     val_dataloader = create_dataloader(val_dataset,args.val_batch_size)
+    stop = EarlyStop(args.patience,args.save_path)
 
     model = ImageClassifierModel(args.repo,args.model,args.num_classes,args.feature_dim)
 
@@ -41,13 +43,13 @@ def run(args,rank):
         print(f'epoch: {epoch + 1}/{args.epochs}')
         # 开启训练模式
         model.train()
-        train(args,rank,optimizer,scheduler,criterion,center,arc,epoch)
+        train(args,rank,train_dataloader,model,optimizer,scheduler,criterion,center,arc,epoch)
 
         # 开启验证模式
         model.eval()
-        eval(rank)
+        eval(rank,val_dataloader,model,stop)
 
-def train(args,rank,optimizer,scheduler,criterion,center,arc,epoch):
+def train(args,rank,train_dataloader,model,optimizer,scheduler,criterion,center,arc,epoch):
     train_losses = list()
     train_accs = list()
     for i, (image, label) in tqdm(enumerate(train_dataloader)):
@@ -81,15 +83,13 @@ def train(args,rank,optimizer,scheduler,criterion,center,arc,epoch):
     print(f'training loss: {train_loss:.2f}',f'train accuracy: {train_acc:.2f}')
 
 
-def eval(rank):
+def eval(rank,val_dataloader,model,stop):
     val_accs = list()
     with torch.no_grad():
-        for i, (image, label) in tqdm(enumerate(train_dataloader)):
+        for i, (image, label) in tqdm(enumerate(val_dataloader)):
             image, label = image.cuda(rank), label.cuda(rank)
             # 推理
             feature, cls = model.forward(image)
-
-
             # Calculate running train accuracy
             predictions = torch.argmax(cls, dim=1)
             num_correct = sum(predictions.eq(label))
@@ -97,6 +97,7 @@ def eval(rank):
             val_accs.append(running_train_acc)
 
         val_acc = torch.tensor(val_accs).mean()
+        stop(model,val_acc)
         print(f'validation accuracy: {val_acc:.2f}')
 
 def parse_arguments(argv):
@@ -108,10 +109,16 @@ def parse_arguments(argv):
     parser.add_argument("--train_batch_size", type=int, help="训练批尺寸", default=32)
     parser.add_argument("--val_batch_size", type=int, help="验证批尺寸", default=8)
     parser.add_argument("--repo", type=str, help="pytorch hub模型仓库路径 或 本地模型路径", default="NVIDIA/DeepLearningExamples:torchhub")
-    parser.add_argument("--model", type=str, help="pytorch hub模型名称 或 本地模型名称", default=8)
-    parser.add_argument("--val_batch_size", type=int, help="验证批尺寸", default=8)
-    parser.add_argument("--val_batch_size", type=int, help="验证批尺寸", default=8)
+    parser.add_argument("--model", type=str, help="pytorch hub模型名称 或 本地模型名称", default="nvidia_efficientnet_b0")
+    parser.add_argument("--save_path", type=str, help="模型保存位置", default=r"D:\project\image_classifier\models\efficientnet_b0_car_parts.pth")
+    parser.add_argument("--patience", type=int, help="early stop轮次", default=1)
+    parser.add_argument("--num_classes", type=int, help="训练集类别数", default=50)
+    parser.add_argument("--feature_dim", type=int, help="特征尺寸", default=512)
+    parser.add_argument("--loss_type", type=str, help="损失类型", default="")
+    parser.add_argument("--epochs", type=int, help="训练轮次", default=100)
+    parser.add_argument("--smoothing", type=int, help="标签平滑参数", default=0.1)
     return parser.parse_args(argv)
+
 
 if __name__ == '__main__':
     # 设置主进程的 IP 地址和端口号
@@ -127,9 +134,4 @@ if __name__ == '__main__':
         rank=-1,
     )
 
-    train_dataloader = create_dataloader("C:\collation\category", 16)
-    model = ImageClassifierModel('NVIDIA/DeepLearningExamples:torchhub', 'nvidia_efficientnet_b0', len(train_dataloader.dataset.label_to_index))
-    x = torch.randn(2, 3, 224, 224)
-    result = model.forward(x)
-    print(result.shape)
-    train(parse_arguments(sys.argv[1:]),0)
+    torch.multiprocessing.spawn(run, args=(parse_arguments(sys.argv[1:]),), nprocs=1, join=True)

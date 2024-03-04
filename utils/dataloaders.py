@@ -74,7 +74,7 @@ class ImageClassifierDataset(Dataset):
         self.allow_formats = allow_formats
         self.augment = augment
         self.augmentation = Augmentation(self.img_size, self.augment)
-        self.label_to_index, self.all_file_paths, self.all_labels = run(thread_num, path, allow_formats)
+        self.label_to_index, self.all_file_paths, self.all_labels = run(self.path, self.thread_num, self.allow_formats)
 
     def __len__(self):
         return len(self.all_file_paths)
