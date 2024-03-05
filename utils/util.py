@@ -14,11 +14,11 @@ class EarlyStop:
         self.best_score = None
         self.early_stop = False
 
-    def __call__(self, val_acc, model):
+    def __call__(self, model, val_acc):
         if self.best_score is None:
             self.best_score = val_acc
             save_checkpoint(model,self.path)
-        elif val_acc > self.best_score:
+        elif val_acc <= self.best_score:
             self.counter += 1
             if self.counter >= self.patience:
                 self.early_stop = True
