@@ -1,10 +1,17 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2024/03/04 17:32
 # @Author  : LiShiHao
-# @FileName: util.py
+# @FileName: utils.py
 # @Software: PyCharm
 
+from easydict import EasyDict
+import yaml
 import torch
+
+def load_config(config_file_path):
+    with open(config_file_path,encoding="utf8") as f:
+        config = EasyDict(yaml.full_load(f))
+    return config
 
 class EarlyStop:
     def __init__(self, patience=1, path='checkpoint.pt'):
@@ -31,3 +38,7 @@ class EarlyStop:
 
 def save_checkpoint(model,path):
     torch.save(model.module.state_dict(), path)
+
+if __name__ == '__main__':
+    config = load_config(r"D:\project\image_classifier\configs\train\train_base.yaml")
+    print(config.dataset)

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2024/02/28 17:08
 # @Author  : LiShiHao
-# @FileName: augmentations.py
+# @FileName: augmentation.py
 # @Software: PyCharm
 
 import albumentations
@@ -9,14 +9,25 @@ import cv2
 import numpy as np
 import torch
 
-
-class Augmentation():
-    def __init__(self, img_size=640, augment=True):
-        # self.path = path
+# https://albumentations.ai/
+# https://blog.csdn.net/weixin_44759449/article/details/130470442
+# AdvancedBlur*，Blur*，Downscale*，Defocus*，GlassBlur*，GaussianBlur*，GaussNoise*，ImageCompression*，ISONoise*，MultiplicativeNoise*，MedianBlur*，MotionBlur*，ZoomBlur*
+# Affine，Flip，GridDistortion，HorizontalFlip，OpticalDistortion，Perspective，PiecewiseAffine，RandomRotate90，Rotate，SafeRotate，ShiftScaleRotate，Transpose，VerticalFlip
+# BBoxSafeRandomCrop，Crop，CenterCrop，CropAndPad，CropNonEmptyMaskIfExists，PadIfNeeded，RandomCrop，RandomCropFromBorders，RandomCropNearBBox，RandomResizedCrop，RandomSizedBBoxSafeCrop，RandomSizedCrop
+# LongestMaxSize，RandomScale，Resize，SmallestMaxSize
+# CLAHE*，Equalize*，HistogramMatching*
+# ColorJitter*，HueSaturationValue*，RandomToneCurve*，RandomBrightnessContrast*
+# FromFloat*，ToGray*，ToFloat*，ToTensorV2，ToRGB*
+# ChannelDropout*，CoarseDropout，Cutout*，GridDropout，MaskDropout，PixelDropout
+# RandomFog*，RandomRain*，RandomShadow*，RandomSnow*，RandomSunFlare*，Spatter*，RandomGravel*
+# ChannelShuffle*，Emboss*，ElasticTransform，FDA*，FancyPCA*，InvertImg*，Lambda，Normalize*，PixelDistributionAdaptation*，Posterize*，RandomGamma*，RandomGridShuffle，RingingOvershoot*，RGBShift*，Sharpen*，Solarize*，Superpixels*，ToSepia*，TemplateTransform*，UnsharpMask*
+# Compose，OneOf，OneOrOther，ReplayCompose，Sequential，SomeOf
+class Augmentation(object):
+    def __init__(self, img_size=640):
         self.image_size = img_size
-        self.augment = augment
 
         self.process = albumentations.Compose([
+            albumentations.AdvancedBlur(p=)
             albumentations.Blur(blur_limit=12),
             albumentations.HorizontalFlip(),
             albumentations.Transpose(),

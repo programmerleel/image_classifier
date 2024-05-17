@@ -11,13 +11,13 @@ import torch
 from torch import optim
 from torch import nn
 from torch.nn import parallel
-from utils.dataloaders import create_dataloader,ImageClassifierDataset
+from utils.dataloader import create_dataloader,ImageClassifierDataset
 from utils.model import ImageClassifierModel
 import sys
 import timm.scheduler
 from utils.loss import *
 from tqdm import tqdm
-from utils.util import EarlyStop
+from utils.utils import EarlyStop
 
 def run(rank,args):
 

@@ -9,7 +9,7 @@ import os
 import sys
 import torch
 import numpy as np
-from utils.augmentations import Augmentation
+from utils.augmentation import Augmentation
 from utils.database import DBHelper
 from utils.model import ImageClassifierModel
 

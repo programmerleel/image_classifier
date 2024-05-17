@@ -1,0 +1,74 @@
+dataset:
+  train_dataset_dir: /media/ai/ZX1512G/inventory
+  val_dataset_dir: ""
+  # if test_dataset_dir is "", then test_dateset_dir=val_dataset_dir
+  test_dataset_dir: ""
+  # only valid if "val_dataset_dir" is ""
+  # if "val_dataset_dir" is "", part of the training dataset will be used as the validation dataset
+  # uou can set it to 0 to prevent validation
+  val_split: 0.1
+
+
+train:
+  input_image_shape: [160, 160, 3]
+  train_epochs: 100
+  batch_size: 32
+  learning_rate: 0.005
+  momentum: 0.9
+  dropout_rate: 0.2
+  l1_regularizer: 0.0
+  l2_regularizer: 0.0001
+  label_smoothing: 0.1
+  use_augmentation: True
+  #  �������Ϊfalse��ѵ��ʱ����ü�������ʱ�������Ĳü���
+  #  �������Ϊtrue��Ԥ����ͼƬ���Ƚ�����䣬��ֹĿ����Σ�����������䣬Ŀ����С����ѵ��ʱ����ü�������ʱ������вü���
+  #  ѵ�����ݼ�����Ŀ����ģ�Ͳü�������ͼƬ������Ӧ������ΪTrue
+  use_padding: True
+  train_whole_model: True
+  use_warmup: True
+  mean_rgb: [0.0]
+  stddev_rgb: [255.0]
+  warmup:
+    #epochs must be less than the first item of learning_rate_schedule, if learning_rate_schedule is set.  epochs: 30
+    epochs: 2
+    start_learning_rate: 0.0005
+  # The int type should be used, but easydict can only use string as key
+#  learning_rate_schedule:
+#    "4": 0.01
+#    "6": 0.005
+#    "8": 0.0005
+  additive_emb_dim: 512
+  center_loss_cfg:
+    ALPHA: 0.2
+    LAMBDA: 0.0005
+  arcface_cfg:
+    s: 15
+    m_arc: 0.3
+    m_cos: 0.0
+    loss_w: 0.5
+  # ""/"arcface"/"center_loss", "" means pure softmax
+  margin_loss_type: ""
+  # you can use best model or last model, e.g.: $saved_dir + subdir + [best_model || last_model]
+  pre_trained_model_dir: ""
+  # only valid if "pre_trained_model_dir" is ""
+  # you can set the URL or local folder path of the TFHub model
+  # if you can use google.com, you can set url, e.g.:"https://tfhub.dev/google/nnlm-en-dim128/2"
+  # if you can not use google.com, you should set local folder path, e.g.:C:/tfhub_modules/efficientnet_lite0
+  # if you set url for tfhub_model_uri, it will cached the model in your local folder: %temp%/tfhub_modules/...
+  tfhub_model_uri: /media/ai/Data_SSD/liqun/code/image_classifier/pretrained_models/v2_21k_b0
+
+
+result:
+  save_dir: "./models"
+  tflite_model_file_name: "fresh.tflite"
+
+
+
+
+
+
+
+
+
+
+
